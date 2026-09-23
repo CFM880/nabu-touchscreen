@@ -1,0 +1,18 @@
+schema = 1
+
+[module]
+name        = "nabu-touchscreen"
+description = "Novatek NT36523 SPI touchscreen (nabu CSOT panel)"
+requires    = []
+
+[provides]
+overlay = "kernel-overlay"
+
+[build]
+kernel_targets = ["drivers/input/touchscreen/nt36523/nt36523_ts.ko"]
+
+[artifacts]
+"nt36523_ts.ko" = "out:drivers/input/touchscreen/nt36523/nt36523_ts.ko"
+
+[install]
+"nt36523_ts.ko" = "/lib/modules/@release@/kernel/drivers/input/touchscreen/nt36523/nt36523_ts.ko"
