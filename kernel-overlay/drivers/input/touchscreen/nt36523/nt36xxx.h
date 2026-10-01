@@ -20,7 +20,9 @@
 #define		_LINUX_NVT_TOUCH_H
 
 #include <linux/delay.h>
+#include <linux/gpio/consumer.h>
 #include <linux/input.h>
+#include <linux/notifier.h>
 #include <linux/of.h>
 #include <linux/spi/spi.h>
 #include <linux/uaccess.h>
@@ -141,7 +143,7 @@ struct nvt_ts_data {
 	uint8_t max_touch_num;
 	uint8_t max_button_num;
 	uint32_t int_trigger_type;
-	int32_t irq_gpio;
+	struct gpio_desc *irq_gpio;
 	uint32_t irq_flags;
 	int32_t reset_gpio;
 	uint32_t reset_flags;
@@ -169,6 +171,14 @@ struct nvt_ts_data {
 	int panel_index;
 	uint32_t spi_max_freq;
 	int db_wakeup;
+	bool wakeup_source;
+	bool irq_wake_enabled;
+	bool system_suspending;
+	bool offline;
+	bool health_reported;
+	bool pen_format_warned;
+	bool work_suspended;
+	struct notifier_block pm_notif;
 	uint8_t debug_flag;
 	bool fw_debug;
 	bool dev_pm_suspend;
