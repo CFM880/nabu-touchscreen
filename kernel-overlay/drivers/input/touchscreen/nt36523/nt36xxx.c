@@ -1787,10 +1787,29 @@ static int32_t nvt_ts_resume(struct device *dev)
 	// please make sure display reset(RESX) sequence and mipi dsi cmds sent before this
 #if NVT_TOUCH_SUPPORT_HW_RST
 	gpio_set_value(ts->reset_gpio, 1);
-#endif
+	/*
+	 * Only a hardware reset throws the controller's firmware away, so this
+	 * is the only case that has to reload it.
+	 */
 	ret = nvt_update_firmware(ts->fw_name);
 	if (ret)
 		NVT_ERR("download firmware failed\n");
+#else
+	/*
+	 * Nabu: no hardware reset is wired to this panel
+	 * (NVT_TOUCH_SUPPORT_HW_RST is 0), so the controller keeps its firmware
+	 * across the deep-sleep suspend.  The unconditional
+	 * nvt_update_firmware() that used to be here cannot work, because the
+	 * IC is not in bootloader mode, and only produced
+	 *
+	 *   nvt_check_fw_reset_state: error, retry=..
+	 *   nvt_download_firmware_hw_crc: nvt_check_fw_reset_state failed
+	 *   nvt_ts_resume: download firmware failed
+	 *
+	 * while the touchscreen itself kept working.  Keep the reset-state check
+	 * below though: it is what brings the controller out of deep sleep.
+	 */
+#endif
 
 	nvt_check_fw_reset_state(RESET_STATE_REK);
 
