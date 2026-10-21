@@ -1819,22 +1819,13 @@ static int32_t nvt_ts_resume(struct device *dev)
 	 * the same path probe() uses successfully.
 	 */
 	ret = nvt_check_fw_reset_state(RESET_STATE_REK);
-	if (ret)
-		NVT_ERR("reset-state check failed (%d)\n", ret);
-
-	/*
-	 * Reload regardless.  After a system resume the IC answers the
-	 * reset-state query (so the check above passes) but never reports
-	 * touches again; re-downloading the firmware is what brings it back
-	 * (again and again over the serial console on 2026-10-19, ~170 ms).
-	 * The check has to stay first: it is what takes the IC out of the deep
-	 * sleep the suspend path put it in, and a download while it is still
-	 * asleep is what failed in 2.4.14.
-	 */
-	ret = nvt_update_firmware(ts->fw_name);
 	if (ret) {
-		NVT_ERR("firmware reload failed (%d)\n", ret);
-		nvt_check_fw_reset_state(RESET_STATE_REK);
+		NVT_ERR("reset-state check failed (%d), reloading firmware\n", ret);
+		ret = nvt_update_firmware(ts->fw_name);
+		if (ret)
+			NVT_ERR("firmware reload failed (%d)\n", ret);
+		else
+			nvt_check_fw_reset_state(RESET_STATE_REK);
 	}
 
 	if (!ts->db_wakeup && !ts->irq_enabled) {
