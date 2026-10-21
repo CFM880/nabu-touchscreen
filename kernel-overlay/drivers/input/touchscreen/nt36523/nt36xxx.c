@@ -1811,22 +1811,7 @@ static int32_t nvt_ts_resume(struct device *dev)
 	 */
 #endif
 
-	/*
-	 * The reset-state check is also what brings the controller out of deep
-	 * sleep, and it can fail: on nabu the IC's status then reads 0x00 and
-	 * the touchscreen stays dead until the module is reloaded (KNOWN-ISSUES
-	 * 2.4.25).  Reload the firmware in that case - it takes ~170 ms and is
-	 * the same path probe() uses successfully.
-	 */
-	ret = nvt_check_fw_reset_state(RESET_STATE_REK);
-	if (ret) {
-		NVT_ERR("reset-state check failed (%d), reloading firmware\n", ret);
-		ret = nvt_update_firmware(ts->fw_name);
-		if (ret)
-			NVT_ERR("firmware reload failed (%d)\n", ret);
-		else
-			nvt_check_fw_reset_state(RESET_STATE_REK);
-	}
+	nvt_check_fw_reset_state(RESET_STATE_REK);
 
 	if (!ts->db_wakeup && !ts->irq_enabled) {
 		nvt_irq_enable(true);
